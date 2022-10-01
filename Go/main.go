@@ -1,11 +1,11 @@
 package main
 
-import {
+import (
 	"fmt"
 	"os"
 	"os/exec"
 	"syscall"
-}
+)
 
 func main(){
 	switch os.Args[1] {
@@ -23,7 +23,7 @@ func parent(){
 	cmd := exec.Command("/proc/self/exe", append([]string{"child"}, os.Args[2:]...)...)
 	// Runs an in-memory image of the current executable, passing in child as the first argument
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.Clone_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS
+		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
 	}
 	// Run the child program in the UTS, PID and MNT namespaces
 	// TODO: Setup cgroups, networking, user namespaces, and filesystem caching for root swapping
@@ -33,7 +33,7 @@ func parent(){
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		fmt.Prinln("Error: ", err)
+		fmt.Println("Error: ", err)
 		os.Exit(1)
 	}
 }
@@ -55,7 +55,7 @@ func child(){
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		fmt.Prinln("Error: ", err)
+		fmt.Println("Error: ", err)
 		os.Exit(1)
 	}
 }

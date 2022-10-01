@@ -26,6 +26,7 @@ func parent(){
 		Cloneflags: syscall.Clone_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS
 	}
 	// Run the child program in the UTS, PID and MNT namespaces
+	// TODO: Setup cgroups, networking, user namespaces, and filesystem caching for root swapping
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -38,6 +39,15 @@ func parent(){
 }
 
 func child(){
+
+	//As initial mounts are inherited from the parent/creating namespace
+	//switch to a root filesystem
+	must(syscall.Mount("rootfs", "rootfs", "", syscall.MS_BIND, ""))
+	must(os.MkdirAll("rootfs/oldrootfs", 0700))
+	must(syscall.PivotRoot("rootfs", "rootfs/oldrootfs"))
+	must(os.Chdir("/"))
+	//Moves current directory at / to rootfs/oldrootfs
+	//pivots the new rootfs to /
 
 	cmd := exec.Command(os.Args[2], os.Args[3:]...)
 	cmd.Stdin = os.Stdin
